@@ -135,7 +135,9 @@ module.exports = function (node) {
               self.secret = null
             }
           }
-        ).catch(err => {
+        ).then(function () {
+          self.collectCameras()
+        }).catch(function (err) {
           self.error = {
             code: 'BLOCKED',
             err: err
