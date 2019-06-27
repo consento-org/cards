@@ -24,7 +24,7 @@
       <div v-if="cameras.length > 1">
         <select v-model="activeCamera">
           <option v-for="camera in cameras" v-bind:value="camera">
-              {{ getCameraName(camera) }}
+              {{ camera.label }}
           </option>
         </select>
       </div>
