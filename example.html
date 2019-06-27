@@ -20,13 +20,13 @@
       <div v-if="activeCamera && !error">
         <input type="checkbox" id="checkbox" v-model="flipped">
         <label for="checkbox" title="Flip camera">⤾</label>
-      </div>
-      <div v-if="cameras.length > 1">
-        <select v-model="activeCamera">
-          <option v-for="camera in cameras" v-bind:value="camera">
-              {{ camera.label }}
-          </option>
-        </select>
+        <div v-if="cameras.length > 0">
+          <select v-model="activeCamera">
+            <option v-for="camera in cameras" v-bind:value="camera">
+                {{ camera.label }}
+            </option>
+          </select>
+        </div>
       </div>
       <div v-if="scanned > 0">
         <h2 v-if="missing > 0">2. Good! Now we only need {{ missing }} more!</h2>
