@@ -42,8 +42,17 @@ module.exports = function (node) {
     },
     mounted: function () {
       this.codeReader = new BrowserQRCodeReader()
-      this.flipped = true
       this.collectCameras()
+    },
+    watch: {
+      activeCamera: function (camera) {
+        if (/facing back/.test(camera.label)) {
+          this.flipped = false
+        } else {
+          this.flipped = true
+        }
+        this.activateCamera()
+      }
     },
     methods: {
       collectCameras: function () {
@@ -52,8 +61,9 @@ module.exports = function (node) {
           .listVideoInputDevices()
           .then(function onCameras (cameras) {
             self.cameras = cameras
-            self.activeCamera = cameras[0]
-            self.activateCamera()
+            if (!self.activeCamera) {
+              self.activeCamera = cameras[0]
+            }
           })
           .catch(function (err) {
             self.error = {
@@ -63,13 +73,15 @@ module.exports = function (node) {
           })
       },
       activateCamera: function () {
-        const camera = this.activeCamera
-        this.codeReader.stopContinuousDecode()
-        if (!camera) return
+        const cameraId = this.activeCamera && (this.activeCamera.id || this.activeCamera.deviceId)
+        if (cameraId === this._cameraId) return
+        this._cameraId = cameraId
+        this.codeReader.stopStreams()
+        if (!cameraId) return
         const self = this
         this.error = null
         this.codeReader.decodeFromInputVideoDeviceContinuously(
-          camera.id,
+          cameraId,
           this.$refs.videoNode,
           function onScan (content) {
             if (content === null) {
@@ -125,7 +137,9 @@ module.exports = function (node) {
               self.secret = null
             }
           }
-        ).catch(err => {
+        ).then(function () {
+          self.collectCameras()
+        }).catch(function (err) {
           self.error = {
             code: 'BLOCKED',
             err: err
