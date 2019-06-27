@@ -32,10 +32,6 @@ consento-cards <threshold> <shares> <dat-hash> (<type>) (<folder>)
 [<folder>] .... folder to be used to output the codes. (defaults to './codes')
 ```
 
-## Use the reader
-
-The reader is wirr
-
 ### License
 
 MIT
