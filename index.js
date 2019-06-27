@@ -59,8 +59,9 @@ module.exports = function (node) {
           .listVideoInputDevices()
           .then(function onCameras (cameras) {
             self.cameras = cameras
-            self.activeCamera = cameras[0]
-            self.activateCamera()
+            if (!self.activeCamera) {
+              self.activeCamera = cameras[0]
+            }
           })
           .catch(function (err) {
             self.error = {
@@ -70,13 +71,15 @@ module.exports = function (node) {
           })
       },
       activateCamera: function () {
-        const camera = this.activeCamera
+        const cameraId = this.activeCamera && (this.activeCamera.id || this.activeCamera.deviceId)
+        if (cameraId === this._cameraId) return
+        this._cameraId = cameraId
         this.codeReader.stopStreams()
-        if (!camera) return
+        if (!cameraId) return
         const self = this
         this.error = null
         this.codeReader.decodeFromInputVideoDeviceContinuously(
-          camera.id,
+          cameraId,
           this.$refs.videoNode,
           function onScan (content) {
             if (content === null) {
