@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="example.css">
+  </head>
+  <body>
+    <div id="app">
+      <div v-if="error">
+        <dif v-if="error.code === 'BLOCKED'">
+          <h2>You need to allow the camera for this page to work.</h2>
+          <button @click="activateCamera">Ask again</button>
+        </dif>
+        <div v-else>
+          <h2>You need to use a browser with Camera support to use this page!</h2>
+        </div>
+      </div>
+      <div v-else>
+        <h2>1. Hold the business card in front of the camera!</h2>
+      </div>
+      <video id="preview" width="500" v-bind:class="{ flipped: flipped, hide: (!activeCamera || error) }" ref="videoNode"></video>
+      <div v-if="activeCamera && !error">
+        <input type="checkbox" id="checkbox" v-model="flipped">
+        <label for="checkbox" title="Flip camera">⤾</label>
+      </div>
+      <div v-if="cameras.length > 1">
+        <select v-model="activeCamera">
+          <option v-for="camera in cameras" v-bind:value="camera">
+              {{ getCameraName(camera) }}
+          </option>
+        </select>
+      </div>
+      <div v-if="scanned > 0">
+        <h2 v-if="missing > 0">2. Good! Now we only need {{ missing }} more!</h2>
+        <h2 v-else-if="scanned < codes.length">2. Great! you collected all necessary cards.</h2>
+        <h2 v-else>2. Awesome! you collected <strong>all</strong> cards.</h2>
+        <ol class="scanned">
+          <li v-for="(code, index) in codes" v-bind:class="{ found: code }">
+            {{ index + 1 }}
+          </li>
+        </ol>
+        <div v-if="secret">
+          <h2>3. Oh! You restored a secret!</h2>
+          <p>
+            By scanning {{ scanned }} of {{ codeSet.shares }} cards, this link to a secret
+            DAT was restored: <a v-if="beaker" v-bind:href="'dat://' + secret ">dat://{{ secret }}</a><pre v-else>dat://{{ secret }}</pre>.
+          </p>
+          <p v-if="!beaker">
+            If you have <a href="https://beakerbrowser.com/">Beaker Browser</a> installed, you can simply <a v-bind:href="'dat://' + secret ">click here</a> 
+            and the secret page will be downloaded through the distributed web.
+          </p>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript" src="dist/consento-cards.min.js"></script>
+    <script type="text/javascript">
+      consento.cards('#app')
+    </script>
+  </body>
+</html>
+

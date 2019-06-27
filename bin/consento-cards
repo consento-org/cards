@@ -1,0 +1,85 @@
+#!/usr/bin/env node
+const qr = require('qr-image')
+const { createWriteStream } = require('fs')
+const { randomBytes } = require('crypto')
+const mkdirp = require('mkdirp')
+const types = ['svg', 'png', 'jpg']
+
+function help (error) {
+  const exit = error ? 1 : 0
+  if (error) {
+    console.error(`
+Error: ${error}
+`)
+  }
+  console.log(`consento-cards <threshold> <shares> <dat-hash> (<type>) (<folder>)
+
+<threshold> ... number of codes necessary to restore the secret
+<shares> ...... number of codes created
+<dat-hash> .... secret to be hidden in the codes
+[<type>] ...... type of the output code; one of: ${types.join(',')} (defaults to svg)
+[<folder>] .... folder to be used to output the codes. (defaults to './codes')
+
+`)
+  process.exit(exit)
+}
+
+switch (process.argv[2]) {
+  case '-h':
+  case '-help':
+  case 'help':
+  case '--h':
+  case '--help':
+    help()
+}
+
+function parseDatHash (input) {
+  if (!input) return null
+  const parts = /^(dat:(\/\/)?)?([0-9a-f]{64})$/.exec(input)
+  if (!parts) return null
+  return parts[3]
+}
+
+const threshold = parseInt(process.argv[2], 10)
+const shares = parseInt(process.argv[3], 10)
+const datHash = parseDatHash(process.argv[4])
+const type = process.argv[5] || 'svg'
+const folder = process.argv[6] || './codes'
+
+if (isNaN(threshold) || threshold < 2) help('Invalid threshold')
+if (isNaN(shares) || shares <= threshold ) help('Invalid amount of shares')
+
+if (!datHash) help('Invalid dat hash')
+
+if (types.indexOf(type) === -1) help('Unknown type')
+
+const sss = require('shamirs-secret-sharing')
+const id = randomBytes(6)
+
+console.log(`ID: ${id.toString('hex')}`)
+
+const parts = sss.split(
+  Buffer.from(datHash, 'hex'),
+  {
+    shares, threshold
+  }
+)
+
+mkdirp.sync(folder)
+
+parts.forEach((part, index) => {
+  const header = Buffer.alloc(4)
+  header[0] = 1
+  header[1] = threshold
+  header[2] = shares
+  header[3] = index
+  const buffer = Buffer.concat([
+    header,
+    id,
+    part
+  ])
+  qr.image(buffer.toString('base64'), {
+    type,
+    ec_level: 'H'
+  }).pipe(createWriteStream(`${folder}/${datHash}_${id.toString('hex')}_${threshold}_${shares}_${index}.${type}`))
+})

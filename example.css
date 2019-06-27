@@ -1,0 +1,20 @@
+.found {
+  color: white;
+  background: black;
+}
+.flipped {
+  -moz-transform: scale(-1, 1);
+  -webkit-transform: scale(-1, 1); -o-transform: scale(-1, 1);
+  transform: scale(-1, 1);
+  filter: FlipH;
+}
+video {
+  border: 1px solid black;
+}
+.scanned li {
+  list-style-type: none;
+  display: inline-block;
+  border: 1px solid black;
+  padding: 5px;
+  margin: 5px;
+}

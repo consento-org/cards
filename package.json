@@ -1,0 +1,35 @@
+{
+  "name": "@consento/cards",
+  "version": "1.0.0",
+  "description": "Generator and Reader for qr codes hiding (and restoring) a secret DAT link in several codes using shamir secrets.",
+  "main": "index.js",
+  "bin": {
+    "consento-cards": "bin/consento-cards"
+  },
+  "scripts": {
+    "build": "browserify index.js --standalone consento.cards -o dist/consento-cards.js; terser dist/consento-cards.js --source-map -c -o dist/consento-cards.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/consento-org/cards.git"
+  },
+  "keywords": [
+    "shamirs secrets",
+    "qr",
+    "app",
+    "dat"
+  ],
+  "author": "Martin Heidegger <martin.heidegger@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@zxing/library": "^0.14.2",
+    "mkdirp": "^0.5.1",
+    "qr-image": "^3.2.0",
+    "shamirs-secret-sharing": "^1.0.1",
+    "vue": "^2.6.10"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "terser": "^4.0.0"
+  }
+}
