@@ -31,5 +31,9 @@
   "devDependencies": {
     "browserify": "^16.2.3",
     "terser": "^4.0.0"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/consento-org/cards/issues"
+  },
+  "homepage": "https://github.com/consento-org/cards#readme"
 }
