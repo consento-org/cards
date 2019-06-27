@@ -1,3 +1,9 @@
+#app, #preview {
+  display: none;
+}
+#app.active, #preview.active {
+  display: block;
+}
 .found {
   color: white;
   background: black;
