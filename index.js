@@ -62,7 +62,7 @@ module.exports = function (node) {
       },
       activateCamera: function () {
         const camera = this.activeCamera
-        this.codeReader.stopContinuousDecode()
+        this.codeReader.stopStreams()
         if (!camera) return
         const self = this
         this.error = null
