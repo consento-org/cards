@@ -40,8 +40,17 @@ module.exports = function (node) {
     },
     mounted: function () {
       this.codeReader = new BrowserQRCodeReader()
-      this.flipped = true
       this.collectCameras()
+    },
+    watch: {
+      activeCamera: function (camera) {
+        if (/facing back/.test(camera)) {
+          this.flipped = false
+        } else {
+          this.flipped = true
+        }
+        this.activateCamera()
+      }
     },
     methods: {
       collectCameras: function () {
