@@ -41,7 +41,7 @@
           <h2>3. Oh! You restored a secret!</h2>
           <p>
             By scanning {{ scanned }} of {{ codeSet.shares }} cards, this link to a secret
-            DAT was restored: <a v-if="beaker" v-bind:href="'dat://' + secret ">dat://{{ secret }}</a><pre v-else>dat://{{ secret }}</pre>.
+            DAT was restored: <a v-if="beaker" v-bind:href="'dat://' + secret ">dat://{{ secret }}</a><pre v-if="!beaker">dat://{{ secret }}</pre>.
           </p>
           <p v-if="!beaker">
             If you have <a href="https://beakerbrowser.com/">Beaker Browser</a> installed, you can simply <a v-bind:href="'dat://' + secret ">click here</a> 
