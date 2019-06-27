@@ -44,7 +44,7 @@ module.exports = function (node) {
     },
     watch: {
       activeCamera: function (camera) {
-        if (/facing back/.test(camera)) {
+        if (/facing back/.test(camera.label)) {
           this.flipped = false
         } else {
           this.flipped = true
