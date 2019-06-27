@@ -16,7 +16,7 @@
       <div v-else>
         <h2>1. Hold the business card in front of the camera!</h2>
       </div>
-      <video id="preview" width="500" v-bind:class="{ flipped: flipped, active: !(!activeCamera || error) }" ref="videoNode"></video>
+      <video id="preview" width="500" height="300" v-bind:class="{ flipped: flipped, active: !(!activeCamera || error) }" ref="videoNode"></video>
       <div v-if="activeCamera && !error">
         <input type="checkbox" id="checkbox" v-model="flipped">
         <label for="checkbox" title="Flip camera">⤾</label>

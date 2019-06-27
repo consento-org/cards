@@ -14,8 +14,9 @@
   transform: scale(-1, 1);
   filter: FlipH;
 }
-video {
+#preview {
   border: 1px solid black;
+  background-color: black;
 }
 .scanned li {
   list-style-type: none;
