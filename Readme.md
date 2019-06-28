@@ -52,4 +52,4 @@ You can use these to restore restore the dat link in the user interface.
 
 ### License
 
-MIT
+[MIT](./LICENSE)
