@@ -3,6 +3,7 @@ const Vue = require('vue/dist/vue.common.prod.js')
 Vue.config.silent = true
 Vue.config.productionTip = false
 const sss = require('shamirs-secret-sharing')
+const SmartPhone = require('detect-mobile-browser')(false)
 const BrowserQRCodeReader = require('@zxing/library/esm5/browser/BrowserQRCodeReader').BrowserQRCodeReader
 
 const codeSets = {}
@@ -36,6 +37,7 @@ module.exports = function (node) {
       activeCameraId: null,
       cameras: [],
       codeSet: null,
+      mobile: SmartPhone.isAny(),
       beaker: !!window.beaker,
       codes: []
     },

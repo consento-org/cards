@@ -23,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@zxing/library": "^0.14.2",
+    "detect-mobile-browser": "^5.0.0",
     "mkdirp": "^0.5.1",
     "qr-image": "^3.2.0",
     "shamirs-secret-sharing": "^1.0.1",
