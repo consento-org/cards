@@ -1,85 +1,178 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --no-warnings
 const qr = require('qr-image')
 const { createWriteStream } = require('fs')
+const { writeFile, readFile } = require('fs').promises
 const { randomBytes } = require('crypto')
+const { dirname, sep } = require('path')
+const toPromise = require('stream-to-promise')
 const mkdirp = require('mkdirp')
 const types = ['svg', 'png', 'jpg']
 
-function help (error) {
+function help (error, help) {
   const exit = error ? 1 : 0
   if (error) {
     console.error(`
 Error: ${error}
 `)
   }
-  console.log(`consento-cards <threshold> <shares> <dat-hash> (<type>) (<folder>)
-
-<threshold> ... number of codes necessary to restore the secret
-<shares> ...... number of codes created
-<dat-hash> .... secret to be hidden in the codes
-[<type>] ...... type of the output code; one of: ${types.join(',')} (defaults to svg)
-[<folder>] .... folder to be used to output the codes. (defaults to './codes')
-
-`)
+  console.log(help)
   process.exit(exit)
 }
 
-switch (process.argv[2]) {
-  case '-h':
-  case '-help':
-  case 'help':
-  case '--h':
-  case '--help':
-    help()
+function helpRoot (error) {
+  help(error, `consento-cards <action>
+
+  <action> = init ..... to init the secrets necessary to retreive the codes
+  <action> = create ... to create qr codes based on the secret
+  
+  Get more help for each action by adding --help or -h
+`)
 }
 
-function parseDatHash (input) {
-  if (!input) return null
-  const parts = /^(dat:(\/\/)?)?([0-9a-f]{64})$/.exec(input)
-  if (!parts) return null
-  return parts[3]
+function helpInit (error) {
+  help(error, `consento-cards init <threshold> <shares> <dat-hash> (<type>) (<folder>)
+
+  Create shares to generate qr codes from.
+  
+  <threshold> ... number of codes necessary to restore the secret
+  <shares> ...... number of codes created
+  <dat-hash> .... secret to be hidden in the codes
+  [<folder>] .... folder to be used to output the codes. (defaults to './codes')
+`)
 }
 
-const threshold = parseInt(process.argv[2], 10)
-const shares = parseInt(process.argv[3], 10)
-const datHash = parseDatHash(process.argv[4])
-const type = process.argv[5] || 'svg'
-const folder = process.argv[6] || './codes'
+function helpCreate (error) {
+  help(error, `consento-cards create <shares-file> <type> <name> [...<name>]
 
-if (isNaN(threshold) || threshold < 2) help('Invalid threshold')
-if (isNaN(shares) || shares <= threshold ) help('Invalid amount of shares')
+  Creates a qr code from a predefined share set.
 
-if (!datHash) help('Invalid dat hash')
+  <shares-file> ... file created by 'consento-cards init'
+  <type> .......... type of the output code; one of: ${types.join(',')}
+  <name> .......... name added to a share
+`)
+}
 
-if (types.indexOf(type) === -1) help('Unknown type')
-
-const sss = require('shamirs-secret-sharing')
-const id = randomBytes(6)
-
-console.log(`ID: ${id.toString('hex')}`)
-
-const parts = sss.split(
-  Buffer.from(datHash, 'hex'),
-  {
-    shares, threshold
+async function root () {
+  let needsHelp = false
+  const [ command, ...args ] = process.argv.slice(2).filter(arg => {
+    if (/^\-{0,2}h|help$/.test(arg)) {
+      needsHelp = true
+      return false
+    }
+    return true
+  })
+  if (command === 'init') {
+    if (needsHelp) {
+      helpInit()
+    } else {
+      return await init(args)
+    }
+  } else if (command === 'create') {
+    if (needsHelp) {
+      helpCreate()
+    } else {
+      return await create(args)
+    }
   }
-)
+  helpRoot()
+}
 
-mkdirp.sync(folder)
+function fourChars (str) {
+  return str.match(/.{4}/g).join('-')
+}
 
-parts.forEach((part, index) => {
-  const header = Buffer.alloc(4)
-  header[0] = 1
-  header[1] = threshold
-  header[2] = shares
-  header[3] = index
-  const buffer = Buffer.concat([
-    header,
-    id,
-    part
-  ])
-  qr.image(buffer.toString('base64'), {
-    type,
-    ec_level: 'H'
-  }).pipe(createWriteStream(`${folder}/${datHash}_${id.toString('hex')}_${threshold}_${shares}_${index}.${type}`))
-})
+async function init (args) {
+  function parseDatHash (input) {
+    if (!input) return null
+    const parts = /^(dat:(\/\/)?)?([0-9a-f]{64})$/.exec(input)
+    if (!parts) return null
+    return parts[3]
+  }
+  
+  const threshold = parseInt(args[0], 10)
+  const shares = parseInt(args[1], 10)
+  const datHash = parseDatHash(args[2])
+  const folder = args[3] || './codes'
+  
+  if (isNaN(threshold) || threshold < 2) helpInit('Invalid threshold')
+  if (isNaN(shares) || shares <= threshold ) helpInit('Invalid amount of shares')
+  
+  if (!datHash) helpInit('Invalid dat hash')
+  
+  const sss = require('shamirs-secret-sharing')
+  const id = randomBytes(6)
+  const idStr = id.toString('hex').toUpperCase()
+  const file = `${folder}/${fourChars(idStr)}.json`
+  
+  mkdirp.sync(folder)
+
+  await writeFile(file, JSON.stringify({
+    createdAt: Date.now(),
+    id: idStr,
+    shares,
+    threshold,
+    assigned: {},
+    available: sss.split(
+      Buffer.from(datHash, 'hex'),
+      {
+        shares, threshold
+      }
+    ).map(buf => buf.toString('hex'))
+  }, null, 2))
+
+  console.log(file)
+}
+
+function assignPart (name, data) {
+  let part = data.assigned[name]
+  if (!part) {
+    if (data.available.length === 0) {
+      throw new Error(`No more shares left`)
+    }
+    part = data.available.shift()
+    data.assigned[name] = part
+  }
+  return Buffer.from(part, 'hex')
+}
+
+async function create ([file, type, ...names]) {
+  if (types.indexOf(type) === -1) helpCreate('Unknown type')
+
+  const raw = await readFile(file, 'utf8')
+  const data = JSON.parse(raw)
+  const id = Buffer.from(data.id, 'hex')
+  for (const name of names) {
+    const part = assignPart(name, data)
+    if (part === null) {
+      throw new Error(`Not enough `)
+    }
+    const flags = Buffer.alloc(4)
+    const nameBuf = Buffer.from(name)
+    flags[0] = 1
+    flags[1] = data.threshold
+    flags[2] = data.shares
+    flags[3] = nameBuf.length
+    const content = Buffer.concat([
+      flags,
+      nameBuf,
+      id,
+      part
+    ])
+
+    const qrName = `${dirname(file)}${sep}${fourChars(data.id)}-${name}.${type}`
+    console.log(`Writing ${qrName}`)
+    await toPromise(
+      qr.image(content.toString('base64'), {
+        type,
+        ec_level: 'H'
+      }).pipe(createWriteStream(qrName))
+    )
+    await writeFile(file, JSON.stringify(data, null, 2))
+  }
+}
+
+root()
+  .catch(err => {
+    console.error(err.stack)
+    process.exit(1)
+  })

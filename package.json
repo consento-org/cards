@@ -26,6 +26,7 @@
     "mkdirp": "^0.5.1",
     "qr-image": "^3.2.0",
     "shamirs-secret-sharing": "^1.0.1",
+    "stream-to-promise": "^2.2.0",
     "vue": "^2.6.10"
   },
   "devDependencies": {

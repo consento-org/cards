@@ -30,11 +30,11 @@
       </div>
       <div v-if="scanned > 0">
         <h2 v-if="missing > 0">2. Good! Now we only need {{ missing }} more!</h2>
-        <h2 v-else-if="scanned < codes.length">2. Great! you collected all necessary cards.</h2>
+        <h2 v-else-if="scanned < codeSet.shares">2. Great! you collected {{ scanned }} cards.</h2>
         <h2 v-else>2. Awesome! you collected <strong>all</strong> cards.</h2>
         <ol class="scanned">
-          <li v-for="(code, index) in codes" v-bind:class="{ found: code }">
-            {{ index + 1 }}
+          <li v-for="(code, name) in codes">
+            <a v-bind:href="'/team/' + name" target="_blank">{{ name }}</a>
           </li>
         </ol>
         <div v-if="secret">

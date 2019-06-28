@@ -16,7 +16,7 @@ function getOrCreateCodeSet (id, threshold, shares) {
     id: id,
     threshold: threshold,
     shares: shares,
-    codes: new Array(shares)
+    codes: {}
   }
   codeSets[id] = codeSet
   return codeSet
@@ -98,38 +98,31 @@ module.exports = function (node) {
             
             const threshold = buf[1]
             if (threshold < 2) {
-              return console.log('we need at lest 2 of ' + shares, threshold)
+              return console.log('we need at least 2 of ' + shares, threshold)
             }
             if (threshold >= shares) {
               return console.log('We need too many codes! Doesnt compute!', shares, threshold)
             }
             
-            const current = buf[3]
-            if (current >= shares) {
-              return console.log('We have a code that is outside the bounds', shares, current)
-            }
-            
-            const id = buf.slice(4, 10).toString('hex')
+            const nameEnd = 4 + buf[3]
+            const name = buf.slice(4, nameEnd)
+            const idEnd = nameEnd + 6
+            const id = buf.slice(nameEnd, idEnd).toString('hex')
             if (!self.codeSet || self.codeSet.id !== id) {
               self.codeSet = getOrCreateCodeSet(id, threshold, shares)
               self.codes = self.codeSet.codes
             }
 
-            self.codes[current] = buf.slice(10)
+            self.codes[name] = buf.slice(idEnd)
 
-            const scanned = self.codes.reduce(function (cnt, code) {
-              if (code) {
-                return cnt + 1
-              }
-              return cnt
-            }, 0)
+            const scanned = Object.keys(self.codes).length
             self.scanned = scanned
             const missing = Math.max(self.codeSet.threshold - scanned, 0)
             self.missing = missing
 
             try {
               self.secret = missing === 0
-                ? sss.combine(self.codes.filter(Boolean)).toString('hex')
+                ? sss.combine(Object.values(self.codes)).toString('hex')
                 : null
             } catch (e) {
               self.secret = null
