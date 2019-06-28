@@ -39,11 +39,19 @@
           <h2>3. Oh! You restored a secret!</h2>
           <p>
             By scanning {{ scanned }} of {{ codeSet.shares }} cards, this link to a secret
-            DAT was restored: <a v-if="beaker" v-bind:href="'dat://' + secret ">dat://{{ secret }}</a><pre v-if="!beaker">dat://{{ secret }}</pre>.
+            DAT was restored: <a v-if="beaker" v-bind:href="'dat://' + secret " target="_blank">dat://{{ secret }}</a><pre v-if="!beaker">dat://{{ secret }}</pre>.
           </p>
-          <p v-if="!beaker">
-            If you have <a href="https://beakerbrowser.com/">Beaker Browser</a> installed, you can simply <a v-bind:href="'dat://' + secret ">click here</a> 
-            and the secret page will be downloaded through the distributed web.
+          <p v-if="!beaker && !mobile">
+            If you have <a href="https://beakerbrowser.com/">Beaker Browser</a> installed, you can simply <a v-bind:href="'dat://' + secret " target="_blank">click here</a> 
+            and the secret page will be downloaded through the distributed web.<br/>
+            <br/>
+            Alternative, you can also use a <a href="https://dat.bovid.space/" target="_blank">DAT gateway</a> to look at the page with any web browser by <a v-bind:href="'https://dat.bovid.space/' + secret" target="_blank">clicking here</a>.
+          </p>
+          <p v-if="mobile">
+            Sadly, there is no <b>mobile</b> browser at the moment capable
+            to download the DAT through the distributed net.<br/>
+            <br/>
+            Don't despair, you can use a <a href="https://dat.bovid.space/">DAT gateway</a> to look at the secret page: <a v-bind:href="'https://dat.bovid.space/' + secret" target="_blank">click here</a>.
           </p>
         </div>
       </div>
