@@ -21,10 +21,8 @@
         <input type="checkbox" id="checkbox" v-model="flipped">
         <label for="checkbox" title="Flip camera">⤾</label>
         <div v-if="cameras.length > 0">
-          <select v-model="activeCamera">
-            <option v-for="camera in cameras" v-bind:value="camera">
-                {{ camera.label }}
-            </option>
+          <select v-model="activeCameraId">
+            <option v-for="camera in cameras" v-bind:value="camera.deviceId">{{ camera.label }}</option>
           </select>
         </div>
       </div>

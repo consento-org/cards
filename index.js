@@ -33,6 +33,7 @@ module.exports = function (node) {
       scanned: -1,
       secret: null,
       activeCamera: null,
+      activeCameraId: null,
       cameras: [],
       codeSet: null,
       beaker: !!window.beaker,
@@ -43,7 +44,18 @@ module.exports = function (node) {
       this.collectCameras()
     },
     watch: {
+      activeCameraId: function (cameraId) {
+        const self = this
+        this.cameras.forEach(function (camera) {
+          if (camera.deviceId === cameraId) {
+            self.activeCamera = camera
+          }
+        })
+      },
       activeCamera: function (camera) {
+        if (this.activeCameraId !== camera.deviceId) {
+          this.activeCameraId = camera.deviceId
+        }
         if (/facing back/.test(camera.label)) {
           this.flipped = false
         } else {
@@ -71,7 +83,7 @@ module.exports = function (node) {
           })
       },
       activateCamera: function () {
-        const cameraId = this.activeCamera && (this.activeCamera.id || this.activeCamera.deviceId)
+        const cameraId = this.activeCamera && this.activeCamera.deviceId
         if (cameraId === this._cameraId) return
         this._cameraId = cameraId
         this.codeReader.stopStreams()
