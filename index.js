@@ -38,7 +38,7 @@ module.exports = function (node) {
       cameras: [],
       codeSet: null,
       mobile: SmartPhone.isAny(),
-      beaker: !!window.beaker,
+      beaker: /BeakerBrowser/.test(navigator.userAgent),
       codes: []
     },
     mounted: function () {
