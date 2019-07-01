@@ -1,6 +1,6 @@
 {
   "name": "@consento/cards",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Generator and Reader for qr codes hiding (and restoring) a secret DAT link in several codes using shamir secrets.",
   "main": "index.js",
   "bin": {
